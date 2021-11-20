@@ -58,8 +58,8 @@ Nsamp=10000;
 
 #
 # Run simulations and plot
-using GLMakie
-GLMakie.activate!()
+using CairoMakie
+GLMakie.activate!(type="svg")
 
 fig=Figure()
 ax=Axis(fig[1,1])
