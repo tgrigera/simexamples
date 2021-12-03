@@ -48,6 +48,7 @@ random number distribution `ddis`
 function experiment_face_ave(Nsamp,Fval,ddis)
     f=rand(ddis,Nsamp)
     fav=sum(Fval.(f))/Nsamp
+    return fav
     end
 
 """
