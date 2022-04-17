@@ -6,10 +6,11 @@ This repository contains short simulation programs or snippets for pedagogical p
 
 - Histograms.jl :: Struct and functions to build histograms.
 
-- Sandpiles.jl :: A simple implementation of the BTW sandpile model.   See =sandpile_dr.jl= for an example on how to drive the simulation module.
+- Sandpiles.jl :: An implementation of the BTW sandpile model in two dimensions.  There are two different (but equivalent) implementations of the avalanche dynamics (=avalanche1.jl= and =avalanche2.jl=), with the second running faster for large piles.   See =sandpile_dr.jl= for an example on how to drive the simulation module.
 
 - twolvl.jl :: Metropolis Monte Carlo of a two-level system
   
+
 * Copyright and license
 
 All files in the simexamples repository are copyright (C) 2022 by Tomas S. Grigera.

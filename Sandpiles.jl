@@ -1,3 +1,19 @@
+# Sandpiles.jl -- Two-dimensional BTW sandpile
+#
+# This file copyright (C) 2022 by Tomas S. Grigera.
+# 
+# This is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License (GPL) as
+# published by the Free Software Foundation. You can use either
+# version 3, or (at your option) any later version.
+#
+# This software is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+# or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# For details see the file LICENSE in the home directory.
+#
+
 """
 Simple implementation of the BTW sandpile model, roughly after
 
@@ -9,11 +25,11 @@ and call `run` for the desired number of steps.
 """
 module Sandpiles
 
-export Sandpile,Sandpile_history,run
+export Sandpile,Sandpile_history, run!
 
 using Random
 
-"struct to hold the instantaneous state of the sandpile"
+"The `Sandpile` struct holds the instantaneous state of the sandpile"
 mutable struct Sandpile
     L::Int
     z::Matrix{Int}
@@ -55,7 +71,7 @@ end
 Sandpile_history()=Sandpile_history(Int[],Float64[],Int[],Int[],Float64[],Int[])
 
 """
-"Return a history object initialized with the average
+Return a history object initialized with the average
 height of the given sandpile, and empty avalanche
 information
 """
@@ -69,13 +85,15 @@ Do at least `steps` steps of dynamical evolution for the sandpile
 is ongoing, continue until avalanche is finished and all
 sites are subcritical.
 """
-function run(pile::Sandpile,steps=1,history::Union{Sandpile_history,Nothing}=nothing)
+function run!(pile::Sandpile,steps=1,history::Union{Sandpile_history,Nothing}=nothing)
     step0=pile.time
     while pile.time<step0+steps
         ir=rand(pile.rng,1:pile.L,2)
         pile.z[ir...]+=1
         pile.ztot+=1
-        if pile.z[ir...]>pile.zc avalanche(pile,history)
+        # Choose which implementation of avalanches to use
+        # if pile.z[ir...]>pile.zc avalanche(pile,history)
+        if pile.z[ir...]>pile.zc avalanche(pile,(ir[1],ir[2]),history)
         else
             pile.time+=1
             if !isnothing(history)
@@ -87,135 +105,10 @@ function run(pile::Sandpile,steps=1,history::Union{Sandpile_history,Nothing}=not
     end
 end
 
+# Two implementations of avalanche dynamis
 
-"""
-Develop an avalanche until no supercritial sites remain.  This
-is called from `run` when some site becomes supercritical.
-"""
-function avalanche(pile::Sandpile,history::Union{Sandpile_history,Nothing}=nothing)
-    more::Bool = true
-    if !isnothing(history) push!(history.avalanche_start,pile.time) end
-    avener=0
-    avsites=zero(pile.z)
-    while more
-        z=copy(pile.z)
+include("avalanche1.jl")
+include("avalanche2.jl")
 
-        # Bulk sites
-        for jx = 2:pile.L-1, jy = 2:pile.L-1
-            if z[jx, jy] > pile.zc
-                avener += 1             # Increase energy count
-                avsites[jx, jy] = 1     # Mark site as belonging to avalnche
-                pile.z[jx, jy] -= 4     # Move grains
-                pile.z[jx+1, jy] += 1
-                pile.z[jx-1, jy] += 1
-                pile.z[jx, jy+1] += 1
-                pile.z[jx, jy-1] += 1
-            end
-        end
-        # Border sites
-        for jy=2:pile.L-1
-            if z[1,jy]>pile.zc
-                avener+=1
-                avsites[1, jy] = 1
-                pile.z[1,jy]-=3
-                pile.z[1,jy+1]+=1
-                pile.z[1,jy-1]+=1
-                pile.z[2,jy]+=1
-            end
-            if z[pile.L,jy]>pile.zc
-                avener+=1
-                avsites[pile.L, jy] = 1
-                pile.z[pile.L,jy]-=4
-                pile.z[pile.L-1,jy]+=1
-                pile.z[pile.L,jy+1]+=1
-                pile.z[pile.L,jy-1]+=1
-                pile.ztot-=1
-            end
-        end
-        for jx=2:pile.L-1
-            if z[jx,1]>pile.zc
-                avener+=1
-                avsites[jx,1] = 1
-                pile.z[jx,1]-=3
-                pile.z[jx-1,1]+=1
-                pile.z[jx-1,1]+=1
-                pile.z[jx,2]+=1
-            end
-            if z[jx,pile.L]>pile.zc
-                avener+=1
-                avsites[jx,pile.L] = 1
-                pile.z[jx,pile.L]-=4
-                pile.z[jx+1,pile.L]+=1
-                pile.z[jx-1,pile.L]+=1
-                pile.z[jx,pile.L-1]+=1
-                pile.ztot-=1
-            end
-        end
-        # Corners
-        if z[1,1]>pile.zc
-            avener+=1
-            avsites[1,1] = 1
-            pile.z[1,1]-=2
-            pile.z[1,2]+=1
-            pile.z[2,1]+=1
-        end
-        if z[1,pile.L]>pile.zc
-            avener+=1
-            avsites[1,pile.L] = 1
-            pile.z[1,pile.L]-=3
-            pile.z[2,pile.L]+=1
-            pile.z[1,pile.L-1]+=1
-            pile.ztot-=1
-        end
-        if z[pile.L,1]>pile.zc
-            avener+=1
-            avsites[pile.L,1] = 1
-            pile.z[pile.L,1]-=3
-            pile.z[pile.L-1,1]+=1
-            pile.z[pile.L,2]+=1
-            pile.ztot-=1
-        end
-        if z[pile.L,pile.L]>pile.zc
-            avener+=1
-            avsites[pile.L,pile.L] = 1
-            pile.z[pile.L,pile.L]-=4
-            pile.z[pile.L-1,pile.L]+=1
-            pile.z[pile.L,pile.L-1]+=1
-            pile.ztot-=2
-        end
-
-        pile.time+=1
-        if !isnothing(history)
-            push!(history.time,pile.time)
-            push!(history.zav,pile.ztot/pile.L^2)
-        end
-        more=any(z->z>pile.zc,pile.z)
-    end
-    if !isnothing(history)
-        push!(history.avalanche_duration,pile.time-history.avalanche_start[end])
-        push!(history.avalanche_energy,avener)
-        push!(history.avalanche_size,avsize(pile,avsites))
-    end
-end
-
-function avsize(pile::Sandpile,avsites)
-    CM=Float64[0, 0]
-    N=0
-    for ix=1:pile.L, iy=1:pile.L
-        if avsites[ix,iy]>0
-            N+=1
-            CM+=[ix, iy]
-        end
-    end
-    CM/=N
-    l=0.
-    for ix=1:pile.L, iy=1:pile.L
-        if avsites[ix,iy]>0
-            l+= sqrt( (ix-CM[1])^2 + (iy-CM[2])^2 )
-        end
-    end
-    l/=N
-    return l
-end
 
 end
