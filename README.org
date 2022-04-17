@@ -1,7 +1,24 @@
-This repository contains short simulation programs or snippets for pedagogical purposes, many created in relation to my [[https://tgrigera.github.io/docencia/][courses]] for [[http://www.fisica.unlp.edu.ar][physics]] students.
+This repository contains short simulation programs or snippets for pedagogical purposes, some created in relation to my [[https://tgrigera.github.io/docencia/][courses]] for [[http://www.fisica.unlp.edu.ar][physics]] students.
 
 * Contents
 
-- DiceME :: Maximum Entropy estimation of dice probability
-- twolvl.jl :: Metropolois Monte Carlo of a two-level system
+- DiceME.jl :: Maximum Entropy estimation of dice probability.
+
+- Histograms.jl :: Struct and functions to build histograms.
+
+- Sandpiles.jl :: A simple implementation of the BTW sandpile model.   See =sandpile_dr.jl= for an example on how to drive the simulation module.
+
+- twolvl.jl :: Metropolis Monte Carlo of a two-level system
   
+* Copyright and license
+
+All files in the simexamples repository are copyright (C) 2022 by Tomas S. Grigera.
+
+The files are free software; you can redistribute and/or modify them under the terms of the GNU General Public License (GPL) as published by the Free Software Foundation, with the additional requirements of attribution and nonmisrepresentation. You can use either version 3, or (at your option) any later version.
+
+MLdemo is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+For details see the file LICENSE in the home directory. 
+
+
+* 
