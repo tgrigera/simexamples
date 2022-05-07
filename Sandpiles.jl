@@ -29,6 +29,10 @@ export Sandpile,Sandpile_history, run!
 
 using Random
 
+abstract type Boundary_conditions end
+struct Open_boundaries <: Boundary_conditions end
+struct Semiopen_boundaries <: Boundary_conditions end
+
 "The `Sandpile` struct holds the instantaneous state of the sandpile"
 mutable struct Sandpile
     L::Int
@@ -36,6 +40,7 @@ mutable struct Sandpile
     zc::Int
     ztot::BigInt
     time::Int
+    BC::Boundary_conditions
     rng
 end
 
@@ -47,8 +52,8 @@ and the critical height `zc`.  Optionally, an appropriately
 seeded random number generator can be passed, which will be
 used in the simulation.
 """
-function Sandpile(L,zc::Int,rng=Random.GLOBAL_RNG)
-    s=Sandpile(L,rand(rng,1:zc,L,L),zc,0,0,rng)
+function Sandpile(L,zc::Int,BC=Semiopen_boundaries(),rng=Random.GLOBAL_RNG)
+    s=Sandpile(L,rand(rng,1:zc,L,L),zc,0,0,BC,rng)
     s.ztot=sum(s.z)
     return s
 end

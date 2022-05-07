@@ -36,7 +36,7 @@ function avalanche(pile::Sandpile,scsite::Tuple{Int,Int},history::Union{Sandpile
     cluster=Set(supercritical_sites)
     while length(supercritical_sites)>0
         avener+=length(supercritical_sites)
-        relax(pile,supercritical_sites)
+        relax(pile,supercritical_sites,pile.BC)
         pile.time+=1
         if !isnothing(history)
             push!(history.time,pile.time)
@@ -65,11 +65,12 @@ function csize(cluster::Set)
 end
 
 """
-Relax all the sites in the `supercritical_sites` collection.
-Sites are not checked again, it is assumend that `supercritical_sites`
-holds the right list.  May generate new supercritical sites.
+Relax all the sites in the `supercritical_sites` collection using semi-open
+boundary conditions.  Sites are not checked again, it is assumend that
+`supercritical_sites` holds the right list.  May generate
+new supercritical sites.
 """
-function relax(pile::Sandpile,supercritical_sites)
+function relax(pile::Sandpile,supercritical_sites,_::Semiopen_boundaries)
     for (jx,jy) in supercritical_sites
         if jx==1
             if jy==1
@@ -125,6 +126,73 @@ function relax(pile::Sandpile,supercritical_sites)
         end
     end
 end
+
+"""
+Relax all the sites in the `supercritical_sites` collection using open
+boundary conditions.  Sites are not checked again, it is assumend that
+`supercritical_sites` holds the right list.  May generate
+new supercritical sites.
+"""
+function relax(pile::Sandpile,supercritical_sites,_::Open_boundaries)
+    for (jx,jy) in supercritical_sites
+        if jx==1
+            if jy==1
+                pile.z[1,1]-=4
+                pile.z[1,2]+=1
+                pile.z[2,1]+=1
+                pile.ztot-=2
+            elseif jy==pile.L
+                pile.z[1,pile.L]-=4
+                pile.z[2,pile.L]+=1
+                pile.z[1,pile.L-1]+=1
+                pile.ztot-=2
+            else
+                pile.z[1,jy]-=4
+                pile.z[1,jy+1]+=1
+                pile.z[1,jy-1]+=1
+                pile.z[2,jy]+=1
+                pile.ztot-=1
+            end
+        elseif jx==pile.L
+            if jy==1
+                pile.z[pile.L,1]-=4
+                pile.z[pile.L-1,1]+=1
+                pile.z[pile.L,2]+=1
+                pile.ztot-=2
+            elseif jy==pile.L
+                pile.z[pile.L,pile.L]-=4
+                pile.z[pile.L-1,pile.L]+=1
+                pile.z[pile.L,pile.L-1]+=1
+                pile.ztot-=2
+            else
+                pile.z[pile.L,jy]-=4
+                pile.z[pile.L-1,jy]+=1
+                pile.z[pile.L,jy+1]+=1
+                pile.z[pile.L,jy-1]+=1
+                pile.ztot-=1
+            end
+        elseif jy==1
+            pile.z[jx,1]-=4
+            pile.z[jx-1,1]+=1
+            pile.z[jx-1,1]+=1
+            pile.z[jx,2]+=1
+            pile.ztot-=1
+        elseif jy==pile.L
+            pile.z[jx,pile.L]-=4
+            pile.z[jx+1,pile.L]+=1
+            pile.z[jx-1,pile.L]+=1
+            pile.z[jx,pile.L-1]+=1
+            pile.ztot-=1
+        else
+            pile.z[jx, jy] -= 4
+            pile.z[jx+1, jy] += 1
+            pile.z[jx-1, jy] += 1
+            pile.z[jx, jy+1] += 1
+            pile.z[jx, jy-1] += 1
+        end
+    end
+end
+
 
 @inline check(pile,sc,jx,jy) =  if pile.z[jx,jy]>pile.zc union!(sc,[(jx,jy)]) end
 
