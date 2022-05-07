@@ -2,6 +2,8 @@ This repository contains short simulation programs or snippets for pedagogical p
 
 * Contents
 
+- 1dmaps.jl :: Plot cobweb and bifurcation diagrams of some well-known dynamical maps.
+
 - DiceME.jl :: Maximum Entropy estimation of dice probability.
 
 - Histograms.jl :: Struct and functions to build histograms.
